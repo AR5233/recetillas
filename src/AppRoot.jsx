@@ -31,13 +31,13 @@ export default function AppRoot() {
   };
 
   const onProcesarReceta = async ({ texto, personas, fuente, titulo }) => {
+    const textoConTitulo = titulo ? `TÍTULO: ${titulo}\n\n${texto}` : texto;
     try {
-      const textoConTitulo = titulo ? `TÍTULO: ${titulo}\n\n${texto}` : texto;
       const datos = await estructurar(textoConTitulo, personas);
       return { ...datos, autor: perfilActivo?.nombre || 'Anónimo' };
     } catch (e) {
-      mostrarToast(e.message || 'Chefcito no responde.', 'error');
-      throw e;
+      mostrarToast(e.message || 'Chefcito no responde. Intenta de nuevo.', 'error');
+      return null;
     }
   };
 
@@ -46,7 +46,7 @@ export default function AppRoot() {
       return await limpiarTexto(texto);
     } catch (e) {
       mostrarToast(e.message || 'Error al limpiar.', 'error');
-      throw e;
+      return texto;
     }
   };
 
