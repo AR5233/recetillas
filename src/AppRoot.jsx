@@ -14,6 +14,12 @@ export default function AppRoot() {
   const { estructurar, reescalar } = useCerebras();
   const [recetaActivaId, setRecetaActivaId] = React.useState(null);
   const { comentarios, agregarComentario, hayCorrecciones } = useComentarios(recetaActivaId);
+  const [toast, setToast] = React.useState(null);
+
+  const mostrarToast = (mensaje) => {
+    setToast(mensaje);
+    setTimeout(() => setToast(null), 2500);
+  };
 
   const subirImagen = async (blob, recetaId) => {
     if (!blob) return null;
@@ -47,6 +53,7 @@ export default function AppRoot() {
       const url = await subirImagen(datosEditados.imagen, recetaCreada.id);
       if (url) await actualizarReceta(recetaCreada.id, { imagen_url: url });
     }
+    mostrarToast('✅ ¡Receta añadida con éxito!');
   };
 
   const onReescalarReceta = async (receta, nuevasPersonas) => {
@@ -56,33 +63,37 @@ export default function AppRoot() {
 
   const onActualizarReceta = async (id, datos, editor) => {
     const updateData = {
-      titulo: datos.titulo,
-      ingredientes: datos.ingredientes,
-      preparacion: datos.preparacion,
+      titulo: datos.titulo, ingredientes: datos.ingredientes, preparacion: datos.preparacion,
       tiempo_total: datos.tiempoTotal,
       puntos_importantes: (datos.puntosImportantes || []).filter(p => p.trim() !== ''),
       sugerencia_opcional: (datos.sugerencia || '').trim(),
       editado_por: editor
     };
     if (datos.categoria) updateData.categoria = datos.categoria;
-    if (datos.imagen && datos.imagen instanceof Blob) {
-      updateData.imagen_url = await subirImagen(datos.imagen, id);
-    }
+    if (datos.imagen && datos.imagen instanceof Blob) updateData.imagen_url = await subirImagen(datos.imagen, id);
     await actualizarReceta(id, updateData);
+    mostrarToast('✅ Receta actualizada');
   };
 
   return (
-    <App
-      perfiles={perfiles} perfilActivo={perfilActivo} loadingPerfiles={loadingPerfiles}
-      onCrearPerfil={crearPerfil} onSeleccionarPerfil={seleccionarPerfil}
-      onBorrarPerfil={borrarPerfil} onCerrarSesion={cerrarSesion}
-      recetas={recetas} favoritos={favoritos} onToggleFavorito={toggleFavorito}
-      onProcesarReceta={onProcesarReceta} onGuardarReceta={onGuardarReceta}
-      onEliminarReceta={eliminarReceta} onReescalarReceta={onReescalarReceta}
-      onActualizarReceta={onActualizarReceta}
-      onVerReceta={setRecetaActivaId} recetaActivaId={recetaActivaId}
-      comentarios={comentarios} onAgregarComentario={agregarComentario}
-      hayCorrecciones={hayCorrecciones}
-    />
+    <>
+      {toast && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-green-500/90 text-white px-6 py-3 rounded-full shadow-lg text-sm font-medium animate-pulse">
+          {toast}
+        </div>
+      )}
+      <App
+        perfiles={perfiles} perfilActivo={perfilActivo} loadingPerfiles={loadingPerfiles}
+        onCrearPerfil={crearPerfil} onSeleccionarPerfil={seleccionarPerfil}
+        onBorrarPerfil={borrarPerfil} onCerrarSesion={cerrarSesion}
+        recetas={recetas} favoritos={favoritos} onToggleFavorito={toggleFavorito}
+        onProcesarReceta={onProcesarReceta} onGuardarReceta={onGuardarReceta}
+        onEliminarReceta={eliminarReceta} onReescalarReceta={onReescalarReceta}
+        onActualizarReceta={onActualizarReceta}
+        onVerReceta={setRecetaActivaId} recetaActivaId={recetaActivaId}
+        comentarios={comentarios} onAgregarComentario={agregarComentario}
+        hayCorrecciones={hayCorrecciones}
+      />
+    </>
   );
 }

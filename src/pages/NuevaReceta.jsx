@@ -50,7 +50,7 @@ export default function NuevaReceta({ onProcesar, onGuardar }) {
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto p-4 space-y-6">
+      <main className="max-w-2xl mx-auto p-4 space-y-6 overflow-x-hidden">
         {paso === 1 && (
           <div className="bg-[#252322] rounded-xl p-6 border border-[#3A3633] space-y-4">
             <h2 className="text-lg font-semibold text-[#E8E0D5]">¿Para cuántas personas?</h2>

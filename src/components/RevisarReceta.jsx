@@ -45,39 +45,40 @@ export default function RevisarReceta({ datosIniciales, onGuardar, onCancelar })
   };
 
   return (
-    <div className="space-y-6 p-4 bg-[#1A1817] min-h-screen text-[#E8E0D5]">
+    <div className="space-y-6 p-4 bg-[#1A1817] min-h-screen text-[#E8E0D5] overflow-x-hidden">
       <h2 className="text-xl font-bold text-[#C8965A]">Revisa tu receta</h2>
+
       <div><label className="block text-sm font-medium text-[#8B7D6B] mb-1">Título *</label><input type="text" value={receta.titulo} onChange={(e) => actualizarCampo('titulo', e.target.value)} className="w-full p-3 bg-[#252322] border border-[#3A3633] rounded-xl text-[#E8E0D5] text-base focus:border-[#C8965A] outline-none" required /></div>
-      <div><label className="block text-sm font-medium text-[#8B7D6B] mb-1">Categoría</label>
-        <select value={receta.categoria} onChange={(e) => actualizarCampo('categoria', e.target.value)} className="w-full p-3 bg-[#252322] border border-[#3A3633] rounded-xl text-[#E8E0D5] text-base focus:border-[#C8965A] outline-none">
-          {['res','pollo','cerdo','pescado','marisco','verdura','legumbre','pasta','arroz','postre','otro'].map(c => <option key={c} value={c}>{c}</option>)}
-        </select>
-      </div>
+      <div><label className="block text-sm font-medium text-[#8B7D6B] mb-1">Categoría</label><select value={receta.categoria} onChange={(e) => actualizarCampo('categoria', e.target.value)} className="w-full p-3 bg-[#252322] border border-[#3A3633] rounded-xl text-[#E8E0D5] text-base focus:border-[#C8965A] outline-none">{['res','pollo','cerdo','pescado','marisco','verdura','legumbre','pasta','arroz','postre','otro'].map(c => <option key={c} value={c}>{c}</option>)}</select></div>
       <div><label className="block text-sm font-medium text-[#8B7D6B] mb-1">Autor</label><input type="text" value={receta.autor} onChange={(e) => actualizarCampo('autor', e.target.value)} className="w-full p-3 bg-[#252322] border border-[#3A3633] rounded-xl text-[#E8E0D5] text-base focus:border-[#C8965A] outline-none" /></div>
       <FormularioImagen onImagenLista={handleImagen} />
       {receta.imagenPreview && <img src={receta.imagenPreview} alt="Preview" className="w-full rounded-xl object-cover max-h-64" />}
 
       <div>
-        <div className="flex justify-between items-center mb-2"><label className="text-sm font-medium text-[#8B7D6B]">Ingredientes</label><button onClick={agregarIngrediente} className="text-sm text-[#C8965A] font-medium">+ Añadir</button></div>
+        <div className="flex justify-between items-center mb-3"><label className="text-sm font-medium text-[#8B7D6B]">Ingredientes</label><button onClick={agregarIngrediente} className="text-sm text-[#C8965A] font-medium">+ Añadir</button></div>
         {receta.ingredientes.map((ing, i) => (
-          <div key={i} className="flex gap-2 mb-2 items-center">
-            <input type="text" value={ing.nombre} onChange={(e) => actualizarIngrediente(i, 'nombre', e.target.value)} placeholder="Ingrediente" className="flex-1 p-3 bg-[#252322] border border-[#3A3633] rounded-xl text-[#E8E0D5] text-base focus:border-[#C8965A] outline-none" />
-            <input type="text" value={ing.cantidad} onChange={(e) => actualizarIngrediente(i, 'cantidad', e.target.value)} placeholder="Cantidad" className="w-28 p-3 bg-[#252322] border border-[#3A3633] rounded-xl text-[#E8E0D5] text-base focus:border-[#C8965A] outline-none" />
-            {ing.esSugerencia && <span className="text-xs text-[#C8965A]">💡</span>}
-            <button onClick={() => eliminarIngrediente(i)} className="text-[#5A5553] hover:text-red-400 text-xl">✕</button>
+          <div key={i} className="bg-[#1F1D1C] rounded-xl p-3 mb-3 border border-[#3A3633]">
+            <div className="flex items-center gap-2 mb-2">
+              <input type="text" value={ing.nombre} onChange={(e) => actualizarIngrediente(i, 'nombre', e.target.value)} placeholder="Nombre del ingrediente" className="flex-1 p-2 bg-[#252322] border border-[#3A3633] rounded-lg text-[#E8E0D5] text-sm focus:border-[#C8965A] outline-none" />
+              {ing.esSugerencia && <span className="text-xs text-[#C8965A]" title="Sugerido por Chefcito">💡</span>}
+              <button onClick={() => eliminarIngrediente(i)} className="text-[#5A5553] hover:text-red-400 text-lg px-1">✕</button>
+            </div>
+            <input type="text" value={ing.cantidad} onChange={(e) => actualizarIngrediente(i, 'cantidad', e.target.value)} placeholder="Cantidad (ej: 200 g, 2 unidades, al gusto)" className="w-full p-2 bg-[#252322] border border-[#3A3633] rounded-lg text-[#E8E0D5] text-sm focus:border-[#C8965A] outline-none" />
           </div>
         ))}
         <div ref={ingredientesEndRef} />
       </div>
 
       <div>
-        <div className="flex justify-between items-center mb-2"><label className="text-sm font-medium text-[#8B7D6B]">Preparación</label><button onClick={agregarPaso} className="text-sm text-[#C8965A] font-medium">+ Añadir paso</button></div>
+        <div className="flex justify-between items-center mb-3"><label className="text-sm font-medium text-[#8B7D6B]">Preparación</label><button onClick={agregarPaso} className="text-sm text-[#C8965A] font-medium">+ Añadir paso</button></div>
         {receta.preparacion.map((paso, i) => (
-          <div key={i} className="flex gap-2 mb-2 items-start">
-            <span className="text-sm font-bold text-[#C8965A] pt-3">{i + 1}.</span>
-            <textarea value={paso.instruccion} onChange={(e) => actualizarPaso(i, 'instruccion', e.target.value)} placeholder="Instrucción (obligatorio)" className="flex-1 p-3 bg-[#252322] border border-[#3A3633] rounded-xl text-[#E8E0D5] text-base resize-none focus:border-[#C8965A] outline-none" rows="2" />
-            <input type="text" value={paso.tiempo} onChange={(e) => actualizarPaso(i, 'tiempo', e.target.value)} placeholder="Ej: 5 min" className="w-28 p-3 bg-[#252322] border border-[#3A3633] rounded-xl text-[#E8E0D5] text-base focus:border-[#C8965A] outline-none" />
-            <button onClick={() => eliminarPaso(i)} className="text-[#5A5553] hover:text-red-400 pt-3 text-xl">✕</button>
+          <div key={i} className="bg-[#1F1D1C] rounded-xl p-3 mb-3 border border-[#3A3633]">
+            <div className="flex items-start gap-2 mb-2">
+              <span className="text-sm font-bold text-[#C8965A] mt-2">{i + 1}.</span>
+              <textarea value={paso.instruccion} onChange={(e) => actualizarPaso(i, 'instruccion', e.target.value)} placeholder="Instrucción del paso" className="flex-1 p-2 bg-[#252322] border border-[#3A3633] rounded-lg text-[#E8E0D5] text-sm resize-none focus:border-[#C8965A] outline-none" rows="2" />
+              <button onClick={() => eliminarPaso(i)} className="text-[#5A5553] hover:text-red-400 text-lg pt-2">✕</button>
+            </div>
+            <input type="text" value={paso.tiempo} onChange={(e) => actualizarPaso(i, 'tiempo', e.target.value)} placeholder="Tiempo (ej: 5 min, 2 h)" className="w-full p-2 bg-[#252322] border border-[#3A3633] rounded-lg text-[#E8E0D5] text-sm focus:border-[#C8965A] outline-none" />
           </div>
         ))}
         <div ref={pasosEndRef} />
@@ -88,11 +89,7 @@ export default function RevisarReceta({ datosIniciales, onGuardar, onCancelar })
       <div>
         <div className="flex justify-between items-center mb-1"><label className="text-sm font-medium text-[#8B7D6B]">⚠️ Puntos importantes</label><button onClick={agregarPuntoImportante} className="text-sm text-[#C8965A] font-medium">+ Añadir</button></div>
         {receta.puntosImportantes.map((punto, i) => (
-          <div key={i} className="flex gap-2 mb-1 items-center">
-            <span className="text-yellow-500">⚠️</span>
-            <input type="text" value={punto} onChange={(e) => { const nuevos = [...receta.puntosImportantes]; nuevos[i] = e.target.value; actualizarCampo('puntosImportantes', nuevos); }} className="flex-1 p-3 bg-[#252322] border border-[#3A3633] rounded-xl text-[#E8E0D5] text-base focus:border-[#C8965A] outline-none" />
-            <button onClick={() => eliminarPuntoImportante(i)} className="text-[#5A5553] hover:text-red-400 text-xl">✕</button>
-          </div>
+          <div key={i} className="flex gap-2 mb-1 items-center"><span className="text-yellow-500">⚠️</span><input type="text" value={punto} onChange={(e) => { const nuevos = [...receta.puntosImportantes]; nuevos[i] = e.target.value; actualizarCampo('puntosImportantes', nuevos); }} className="flex-1 p-3 bg-[#252322] border border-[#3A3633] rounded-xl text-[#E8E0D5] text-base focus:border-[#C8965A] outline-none" /><button onClick={() => eliminarPuntoImportante(i)} className="text-[#5A5553] hover:text-red-400 text-xl">✕</button></div>
         ))}
       </div>
 
