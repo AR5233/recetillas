@@ -1,22 +1,24 @@
 @import "tailwindcss";
 
+html {
+  font-size: 17px;
+}
+
 body {
   background-color: #1A1817;
   color: #E8E0D5;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   overflow-x: hidden;
-  font-size: 16px;
 }
 
 * {
   -webkit-overflow-scrolling: touch;
 }
 
-@media (max-width: 640px) {
-  body {
-    font-size: 15px;
-  }
-  input, textarea, select, button {
-    font-size: 16px !important;
-  }
+@media (max-width: 380px) {
+  html { font-size: 16px; }
+}
+
+input, textarea, select, button {
+  font-size: inherit;
 }
