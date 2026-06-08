@@ -27,7 +27,7 @@ export default function DetalleReceta({
 
   if (editando) {
     return (
-      <div className="min-h-screen bg-[#1A1817]">
+      <div className="min-h-screen bg-[#1A1817] text-base">
         <header className="bg-[#252322] shadow-md"><div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3"><button onClick={() => setEditando(false)} className="text-[#8B7D6B] text-xl">←</button><h1 className="text-lg font-bold text-[#E8E0D5]">Editando receta</h1></div></header>
         <main className="max-w-2xl mx-auto"><RevisarReceta datosIniciales={{titulo: receta.titulo, autor: receta.autor || 'Anónimo', ingredientes: receta.ingredientes || [], preparacion: receta.preparacion || [], tiempoTotal: receta.tiempo_total || '', puntosImportantes: receta.puntos_importantes || [], sugerencia: receta.sugerencia_opcional || ''}} onGuardar={(datos) => { onActualizar(receta.id, datos, perfilActivo?.nombre); setEditando(false); }} onCancelar={() => setEditando(false)} /></main>
       </div>
@@ -42,7 +42,7 @@ export default function DetalleReceta({
   };
 
   return (
-    <div className="min-h-screen bg-[#1A1817]">
+    <div className="min-h-screen bg-[#1A1817] text-base">
       <header className="bg-[#252322] shadow-md sticky top-0 z-10 border-b border-[#3A3633]">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3"><Link to="/" className="text-[#8B7D6B] text-xl">←</Link><h1 className="text-lg font-bold text-[#E8E0D5] flex-1 truncate">{receta.titulo}</h1>{perfilActivo && <button onClick={() => onToggleFavorito(receta.id)} className="text-xl">{favoritos.includes(receta.id) ? '❤️' : '🤍'}</button>}</div>
       </header>

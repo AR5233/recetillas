@@ -44,7 +44,7 @@ export default function NuevaReceta({ onProcesar, onGuardar }) {
   };
 
   return (
-    <div className="min-h-screen bg-[#1A1817]">
+    <div className="min-h-screen bg-[#1A1817] text-base">
       <header className="bg-[#252322] shadow-md sticky top-0 z-20 border-b border-[#3A3633]">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
           <button onClick={handleAtras} className="text-[#8B7D6B] text-xl">←</button>

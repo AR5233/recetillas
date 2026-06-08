@@ -27,7 +27,7 @@ export default function Home({
   }
 
   return (
-    <div className="min-h-screen bg-[#1A1817]">
+    <div className="min-h-screen bg-[#1A1817] text-base">
       <header className="bg-[#252322] shadow-md sticky top-0 z-20 border-b border-[#3A3633]">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
           <button onClick={() => setMenuAbierto(!menuAbierto)} className="text-[#8B7D6B] text-xl w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#2F2C2A]">
