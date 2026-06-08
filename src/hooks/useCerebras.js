@@ -1,7 +1,12 @@
 import { CHEFCITO_ESTRUCTURAR } from '../constants/prompts';
 
-const API_KEY = import.meta.env.VITE_CEREBRAS_API_KEY;
-const ENDPOINT = 'https://api.cerebras.ai/v1/chat/completions';
+const CEREBRAS_KEY = import.meta.env.VITE_CEREBRAS_API_KEY;
+const CEREBRAS_ENDPOINT = 'https://api.cerebras.ai/v1/chat/completions';
+const GROQ_KEY = import.meta.env.VITE_GROQ_API_KEY;
+const GROQ_ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions';
+
+let lastCallTime = 0;
+const MIN_INTERVAL = 15000;
 
 function parseIngredientes(texto) {
   if (!texto) return [];
@@ -61,105 +66,86 @@ function parseReceta(texto) {
     }
   }
   if (currentKey) secciones[currentKey] = currentValue.trim();
-  const categoria = secciones['CATEGORÍA:'] || 'otro';
-  const titulo = secciones['TÍTULO:'] || '';
-  const tiempoTotal = secciones['TIEMPO TOTAL:'] || '';
-  const sugerencia = secciones['SUGERENCIA:'] || '';
-  const ingredientesArray = secciones['INGREDIENTES:'] ? parseIngredientes(secciones['INGREDIENTES:']) : [];
-  const preparacionArray = secciones['PREPARACIÓN:'] ? parsePreparacion(secciones['PREPARACIÓN:']) : [];
-  const puntosImportantes = [];
-  if (secciones['PUNTOS IMPORTANTES:']) {
-    for (const linea of secciones['PUNTOS IMPORTANTES:'].split('\n')) {
-      const t = linea.trim();
-      if (t.startsWith('-')) puntosImportantes.push(t.substring(1).trim());
-      else if (t && t !== 'Ninguno') puntosImportantes.push(t);
-    }
-  }
-  const elementosFaltantesArray = [];
-  if (secciones['ELEMENTOS FALTANTES:']) {
-    for (const linea of secciones['ELEMENTOS FALTANTES:'].split('\n')) {
-      const t = linea.trim();
-      if (!t || t === 'Ninguno' || !t.startsWith('-')) continue;
-      const contenido = t.substring(1).trim();
-      const guionIdx = contenido.lastIndexOf(' — ');
-      if (guionIdx !== -1) {
-        const nc = contenido.substring(0, guionIdx).trim();
-        const razon = contenido.substring(guionIdx + 3).trim();
-        const dp = nc.indexOf(':');
-        if (dp !== -1) {
-          elementosFaltantesArray.push({ nombre: nc.substring(0, dp).trim(), cantidad: nc.substring(dp + 1).trim(), razon, esSugerencia: true });
-        }
-      }
-    }
-  }
-  return { titulo, categoria, ingredientes: ingredientesArray, preparacion: preparacionArray, tiempoTotal, puntosImportantes, elementosFaltantes: elementosFaltantesArray, sugerencia };
+  return {
+    titulo: secciones['TÍTULO:'] || '',
+    categoria: secciones['CATEGORÍA:'] || 'otro',
+    ingredientes: secciones['INGREDIENTES:'] ? parseIngredientes(secciones['INGREDIENTES:']) : [],
+    preparacion: secciones['PREPARACIÓN:'] ? parsePreparacion(secciones['PREPARACIÓN:']) : [],
+    tiempoTotal: secciones['TIEMPO TOTAL:'] || '',
+    puntosImportantes: (secciones['PUNTOS IMPORTANTES:'] || '').split('\n').filter(l => l.trim()).map(l => l.replace(/^- /, '')),
+    elementosFaltantes: [],
+    sugerencia: secciones['SUGERENCIA:'] || ''
+  };
 }
 
-function extraerNumero(cantidad) {
-  const limpio = cantidad.replace(/\u202F/g, ' ').replace(/\u00A0/g, ' ').replace(/≈/g, '').trim();
-  if (limpio === 'al gusto' || limpio === 'suficiente para freír' || limpio.startsWith('suficiente')) return null;
-  const match = limpio.match(/^([\d,.]+)/);
-  if (match) return parseFloat(match[1].replace(',', '.'));
-  const fracciones = { '½': 0.5, '¼': 0.25, '¾': 0.75, '⅓': 1/3, '⅔': 2/3 };
-  for (const [simbolo, valor] of Object.entries(fracciones)) {
-    if (limpio.startsWith(simbolo)) return valor;
-  }
-  return null;
-}
-
-function extraerUnidad(cantidad) {
-  const limpio = cantidad.replace(/\u202F/g, ' ').replace(/\u00A0/g, ' ').replace(/≈/g, '').trim();
-  const match = limpio.match(/^[\d,.\/½¼¾⅓⅔]+\s*(.*)/);
-  if (!match) return limpio;
-  const resto = match[1].trim();
-  if (!resto) return '';
-  const parenIdx = resto.indexOf('(');
-  if (parenIdx !== -1) return resto.substring(0, parenIdx).trim();
-  return resto;
-}
-
-function reescalarLocal(ingredientes, dePersonas, aPersonas) {
-  const factor = aPersonas / dePersonas;
-  return ingredientes.map(ing => {
-    let cantidadLimpia = ing.cantidad.replace(/ para \d+ personas?/gi, "").trim();
-    const numero = extraerNumero(cantidadLimpia);
-    if (numero === null) return { ...ing };
-    const unidad = extraerUnidad(cantidadLimpia);
-    const nuevoNumero = numero * factor;
-    let nuevoStr;
-    if (nuevoNumero < 0.5 && Math.abs(nuevoNumero - 0.25) < 0.01) nuevoStr = '¼';
-    else if (nuevoNumero < 0.5 && Math.abs(nuevoNumero - 1/3) < 0.01) nuevoStr = '⅓';
-    else if (Math.abs(nuevoNumero - 0.5) < 0.01) nuevoStr = '½';
-    else if (Math.abs(nuevoNumero - 0.75) < 0.01) nuevoStr = '¾';
-    else if (Number.isInteger(nuevoNumero)) nuevoStr = nuevoNumero.toString();
-    else nuevoStr = nuevoNumero.toFixed(1).replace('.', ',');
-    return { ...ing, cantidad: unidad ? `${nuevoStr} ${unidad}` : nuevoStr };
-  });
+async function esperarSiNecesario() {
+  const ahora = Date.now();
+  const espera = MIN_INTERVAL - (ahora - lastCallTime);
+  if (espera > 0) await new Promise(r => setTimeout(r, espera));
+  lastCallTime = Date.now();
 }
 
 export default function useCerebras() {
   async function estructurar(textoUsuario, numPersonas) {
-    const response = await fetch(ENDPOINT, {
+    await esperarSiNecesario();
+    const response = await fetch(CEREBRAS_ENDPOINT, {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${API_KEY}`, 'Content-Type': 'application/json' },
+      headers: { 'Authorization': `Bearer ${CEREBRAS_KEY}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'gpt-oss-120b',
-        messages: [{ role: 'system', content: CHEFCITO_ESTRUCTURAR }, { role: 'user', content: `Texto: ${textoUsuario}\nPersonas: ${numPersonas}` }],
-        max_tokens: 2500
+        messages: [
+          { role: 'system', content: CHEFCITO_ESTRUCTURAR },
+          { role: 'user', content: `Texto: ${textoUsuario}\nPersonas: ${numPersonas}` }
+        ],
+        max_tokens: 3500
       })
     });
-    if (!response.ok) throw new Error(`API: ${response.status}`);
+    if (!response.ok) throw new Error(`Chefcito no responde. Código: ${response.status}`);
     const data = await response.json();
     const contenido = data.choices?.[0]?.message?.content;
-    if (!contenido) throw new Error('Sin contenido');
+    if (!contenido) throw new Error('Chefcito no devolvió contenido.');
     return parseReceta(contenido);
   }
 
-  function reescalar(ingredientes, dePersonas, aPersonas) {
-    if (!ingredientes?.length) return [];
-    if (dePersonas === aPersonas) return ingredientes;
-    return reescalarLocal(ingredientes, dePersonas, aPersonas);
+  async function reescalar(ingredientes, dePersonas, aPersonas) {
+    if (!ingredientes?.length || dePersonas === aPersonas) return ingredientes;
+    await esperarSiNecesario();
+    const lista = ingredientes.map(i => `- ${i.nombre}: ${i.cantidad}`).join('\n');
+    const response = await fetch(GROQ_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${GROQ_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        messages: [
+          { role: 'system', content: 'Eres un chef experto. Reescala esta receta de forma REALISTA. No uses multiplicación lineal. El arroz, pasta y legumbres esponjan (×0.4-0.6). Los condimentos fuertes (ajo, guindilla) no se multiplican apenas. Los líquidos se ajustan con criterio. Devuelve solo la lista de ingredientes con cantidades ajustadas para el nuevo número de personas. Formato: - ingrediente: cantidad' },
+          { role: 'user', content: `Receta para ${dePersonas} personas:\n${lista}\n\nReescala para ${aPersonas} personas.` }
+        ],
+        max_tokens: 500
+      })
+    });
+    if (!response.ok) throw new Error(`Error al reescalar. Código: ${response.status}`);
+    const data = await response.json();
+    const contenido = data.choices?.[0]?.message?.content;
+    return contenido ? parseIngredientes(contenido) : ingredientes;
   }
 
-  return { estructurar, reescalar };
+  async function limpiarTexto(texto) {
+    const response = await fetch(GROQ_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${GROQ_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'llama-3.1-8b-instant',
+        messages: [
+          { role: 'system', content: 'Eres un asistente que limpia transcripciones de recetas de cocina en español latino. Corrige errores de transcripción, elimina muletillas (ehh, mmm, este...), organiza en INGREDIENTES y PREPARACIÓN. No inventes nada. Devuelve solo el texto limpio.' },
+          { role: 'user', content: texto }
+        ],
+        max_tokens: 1000
+      })
+    });
+    if (!response.ok) throw new Error(`Error al limpiar texto. Código: ${response.status}`);
+    const data = await response.json();
+    return data.choices?.[0]?.message?.content || texto;
+  }
+
+  return { estructurar, reescalar, limpiarTexto };
 }

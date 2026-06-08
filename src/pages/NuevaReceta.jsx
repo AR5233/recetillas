@@ -4,7 +4,7 @@ import FormularioTexto from '../components/FormularioTexto';
 import FormularioAudio from '../components/FormularioAudio';
 import RevisarReceta from '../components/RevisarReceta';
 
-export default function NuevaReceta({ onProcesar, onGuardar }) {
+export default function NuevaReceta({ onProcesar, onGuardar, onLimpiar }) {
   const navigate = useNavigate();
   const [paso, setPaso] = useState(1);
   const [personas, setPersonas] = useState(2);
@@ -105,7 +105,7 @@ export default function NuevaReceta({ onProcesar, onGuardar }) {
               </div>
               <button onClick={() => { setMetodo(null); setPaso(1); }} className="text-xs text-[#8B7D6B] hover:text-[#C8965A]">Editar</button>
             </div>
-            <FormularioTexto onSubmit={handleTexto} />
+            <FormularioTexto onSubmit={handleTexto} onLimpiar={onLimpiar} />
           </div>
         )}
 

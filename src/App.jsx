@@ -7,34 +7,17 @@ export default function App({
   perfiles, perfilActivo, loadingPerfiles,
   onCrearPerfil, onSeleccionarPerfil, onBorrarPerfil, onCerrarSesion,
   recetas, favoritos, onToggleFavorito,
-  onProcesarReceta, onGuardarReceta, onEliminarReceta, onReescalarReceta, onActualizarReceta,
+  onProcesarReceta, onGuardarReceta, onLimpiarTexto, onEliminarReceta, onReescalarReceta, onActualizarReceta,
   onVerReceta, recetaActivaId, comentarios, onAgregarComentario, hayCorrecciones
 }) {
-  const homeProps = {
-    perfiles, perfilActivo, loadingPerfiles,
-    onCrearPerfil, onSeleccionarPerfil, onBorrarPerfil, onCerrarSesion,
-    recetas, favoritos, onToggleFavorito, onEliminarReceta
-  };
+  const homeProps = { perfiles, perfilActivo, loadingPerfiles, onCrearPerfil, onSeleccionarPerfil, onBorrarPerfil, onCerrarSesion, recetas, favoritos, onToggleFavorito, onEliminarReceta };
+  const detalleProps = { recetas, favoritos, perfilActivo, onToggleFavorito, onEliminar: onEliminarReceta, onReescalar: onReescalarReceta, onActualizar: onActualizarReceta, onVerReceta, comentarios, onAgregarComentario, hayCorrecciones };
 
   return (
     <Routes>
       <Route path="/" element={<Home {...homeProps} />} />
-      <Route path="/nueva" element={<NuevaReceta onProcesar={onProcesarReceta} onGuardar={onGuardarReceta} />} />
-      <Route path="/receta/:id" element={
-        <DetalleReceta
-          recetas={recetas}
-          favoritos={favoritos}
-          perfilActivo={perfilActivo}
-          onToggleFavorito={onToggleFavorito}
-          onEliminar={onEliminarReceta}
-          onReescalar={onReescalarReceta}
-          onActualizar={onActualizarReceta}
-          onVerReceta={onVerReceta}
-          comentarios={comentarios}
-          onAgregarComentario={onAgregarComentario}
-          hayCorrecciones={hayCorrecciones}
-        />
-      } />
+      <Route path="/nueva" element={<NuevaReceta onProcesar={onProcesarReceta} onGuardar={onGuardarReceta} onLimpiar={onLimpiarTexto} />} />
+      <Route path="/receta/:id" element={<DetalleReceta {...detalleProps} />} />
     </Routes>
   );
 }
