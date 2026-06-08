@@ -35,7 +35,10 @@ export default function NuevaReceta({ onProcesar, onGuardar }) {
   };
 
   const handleAtras = () => {
+    if (paso === 3) { setPaso(2); return; }
+    if (paso === 2) { if (metodo) { setMetodo(null); return; } setPaso(1); return; }
     if (paso === 3) setPaso(2);
+    else if (paso === 2 && metodo) setMetodo(null);
     else if (paso === 2) setPaso(1);
     else navigate('/');
   };

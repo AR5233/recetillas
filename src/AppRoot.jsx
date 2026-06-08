@@ -78,7 +78,7 @@ export default function AppRoot() {
   return (
     <>
       {toast && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-green-500/90 text-white px-6 py-3 rounded-full shadow-lg text-sm font-medium animate-pulse">
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 bg-green-500 text-white px-5 py-2.5 rounded-xl shadow-2xl text-base font-medium">
           {toast}
         </div>
       )}

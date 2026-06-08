@@ -121,9 +121,10 @@ function extraerUnidad(cantidad) {
 function reescalarLocal(ingredientes, dePersonas, aPersonas) {
   const factor = aPersonas / dePersonas;
   return ingredientes.map(ing => {
-    const numero = extraerNumero(ing.cantidad);
+    let cantidadLimpia = ing.cantidad.replace(/ para \d+ personas?/gi, "").trim();
+    const numero = extraerNumero(cantidadLimpia);
     if (numero === null) return { ...ing };
-    const unidad = extraerUnidad(ing.cantidad);
+    const unidad = extraerUnidad(cantidadLimpia);
     const nuevoNumero = numero * factor;
     let nuevoStr;
     if (nuevoNumero < 0.5 && Math.abs(nuevoNumero - 0.25) < 0.01) nuevoStr = '¼';
