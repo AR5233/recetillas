@@ -5,8 +5,8 @@ const CEREBRAS_ENDPOINT = 'https://api.cerebras.ai/v1/chat/completions';
 const GROQ_KEY = import.meta.env.VITE_GROQ_API_KEY;
 const GROQ_ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions';
 
-let lastCallTime = 0;
-const MIN_INTERVAL = 15000;
+let lastCerebrasCall = 0;
+const CEREBRAS_INTERVAL = 15000;
 
 function parseIngredientes(texto) {
   if (!texto) return [];
@@ -78,16 +78,16 @@ function parseReceta(texto) {
   };
 }
 
-async function esperarSiNecesario() {
+async function esperarCerebras() {
   const ahora = Date.now();
-  const espera = MIN_INTERVAL - (ahora - lastCallTime);
+  const espera = CEREBRAS_INTERVAL - (ahora - lastCerebrasCall);
   if (espera > 0) await new Promise(r => setTimeout(r, espera));
-  lastCallTime = Date.now();
+  lastCerebrasCall = Date.now();
 }
 
 export default function useCerebras() {
   async function estructurar(textoUsuario, numPersonas) {
-    await esperarSiNecesario();
+    await esperarCerebras();
     const response = await fetch(CEREBRAS_ENDPOINT, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${CEREBRAS_KEY}`, 'Content-Type': 'application/json' },
@@ -109,7 +109,6 @@ export default function useCerebras() {
 
   async function reescalar(ingredientes, dePersonas, aPersonas) {
     if (!ingredientes?.length || dePersonas === aPersonas) return ingredientes;
-    await esperarSiNecesario();
     const lista = ingredientes.map(i => `- ${i.nombre}: ${i.cantidad}`).join('\n');
     const response = await fetch(GROQ_ENDPOINT, {
       method: 'POST',
@@ -117,7 +116,7 @@ export default function useCerebras() {
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         messages: [
-          { role: 'system', content: 'Eres un chef experto. Reescala esta receta de forma REALISTA. No uses multiplicación lineal. El arroz, pasta y legumbres esponjan (×0.4-0.6). Los condimentos fuertes (ajo, guindilla) no se multiplican apenas. Los líquidos se ajustan con criterio. Devuelve solo la lista de ingredientes con cantidades ajustadas para el nuevo número de personas. Formato: - ingrediente: cantidad' },
+          { role: 'system', content: 'Eres un chef experto. Reescala esta receta de forma REALISTA. No uses multiplicación lineal. El arroz, pasta y legumbres esponjan (×0.4-0.6). Los condimentos fuertes (ajo, guindilla) no se multiplican apenas. Los líquidos se ajustan con criterio. Devuelve solo la lista de ingredientes con cantidades ajustadas. Formato: - ingrediente: cantidad' },
           { role: 'user', content: `Receta para ${dePersonas} personas:\n${lista}\n\nReescala para ${aPersonas} personas.` }
         ],
         max_tokens: 500
@@ -136,7 +135,7 @@ export default function useCerebras() {
       body: JSON.stringify({
         model: 'llama-3.1-8b-instant',
         messages: [
-          { role: 'system', content: 'Eres un asistente que limpia transcripciones de recetas de cocina en español latino. Corrige errores de transcripción, elimina muletillas (ehh, mmm, este...), organiza en INGREDIENTES y PREPARACIÓN. No inventes nada. Devuelve solo el texto limpio.' },
+          { role: 'system', content: 'Eres un asistente que limpia transcripciones de recetas en español latino. Corrige errores de transcripción, elimina muletillas (ehh, mmm, este...), organiza en INGREDIENTES y PREPARACIÓN. NO añadas título. NO inventes ingredientes. NO corrijas cantidades. Solo limpia y organiza lo que ya está. Devuelve solo el texto limpio.' },
           { role: 'user', content: texto }
         ],
         max_tokens: 1000
