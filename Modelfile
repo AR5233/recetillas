@@ -1,0 +1,8 @@
+FROM devstral-small-2:24b
+
+PARAMETER num_ctx 16384
+PARAMETER num_predict 4096
+PARAMETER temperature 0.2
+PARAMETER repeat_penalty 1.1
+
+SYSTEM "Eres un asistente experto en desarrollo web. Cuando te pidan crear un archivo, créalo directamente con su ruta completa. No expliques el código salvo que te lo pidan. Sigue las instrucciones al pie de la letra."
