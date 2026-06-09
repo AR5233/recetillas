@@ -24,7 +24,7 @@ export default function RevisarReceta({ datosIniciales, onGuardar, onCancelar })
   const eliminarIngrediente = (i) => setReceta(prev => ({ ...prev, ingredientes: prev.ingredientes.filter((_, idx) => idx !== i) }));
   const agregarIngrediente = () => {
     setReceta(prev => ({ ...prev, ingredientes: [...prev.ingredientes, { nombre: '', cantidad: '', esSugerencia: false }] }));
-    setTimeout(() => ingredientesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+    setTimeout(() => ingredientesEndRef.current?.previousElementSibling?.scrollIntoView({ behavior: "smooth", block: "center" }), 100);
   };
   const actualizarPaso = (i, campo, valor) => { const nuevos = [...receta.preparacion]; nuevos[i] = { ...nuevos[i], [campo]: valor }; setReceta(prev => ({ ...prev, preparacion: nuevos })); };
   const eliminarPaso = (i) => setReceta(prev => ({ ...prev, preparacion: prev.preparacion.filter((_, idx) => idx !== i) }));
@@ -63,7 +63,7 @@ export default function RevisarReceta({ datosIniciales, onGuardar, onCancelar })
               {ing.esSugerencia && <span className="text-xs text-[#C8965A]" title="Sugerido por Chefcito">💡</span>}
               <button onClick={() => eliminarIngrediente(i)} className="text-[#5A5553] hover:text-red-400 text-lg px-1">✕</button>
             </div>
-            <input type="text" value={ing.cantidad} onChange={(e) => actualizarIngrediente(i, 'cantidad', e.target.value)} placeholder="Cantidad (ej: 200 g, 2 unidades, al gusto)" className="w-full p-2 bg-[#252322] border border-[#3A3633] rounded-lg text-[#E8E0D5] text-sm focus:border-[#C8965A] outline-none" />
+            <div className="border-t border-[#2A2826] my-2"></div><input type="text" value={ing.cantidad} onChange={(e) => actualizarIngrediente(i, 'cantidad', e.target.value)} placeholder="Cantidad (ej: 200 g, 2 unidades, al gusto)" className="w-full p-2 bg-[#252322] border border-[#3A3633] rounded-lg text-[#E8E0D5] text-sm focus:border-[#C8965A] outline-none" />
           </div>
         ))}
         <div ref={ingredientesEndRef} />
@@ -78,7 +78,7 @@ export default function RevisarReceta({ datosIniciales, onGuardar, onCancelar })
               <textarea value={paso.instruccion} onChange={(e) => actualizarPaso(i, 'instruccion', e.target.value)} placeholder="Instrucción del paso" className="flex-1 p-2 bg-[#252322] border border-[#3A3633] rounded-lg text-[#E8E0D5] text-sm resize-none focus:border-[#C8965A] outline-none" rows="2" />
               <button onClick={() => eliminarPaso(i)} className="text-[#5A5553] hover:text-red-400 text-lg pt-2">✕</button>
             </div>
-            <input type="text" value={paso.tiempo} onChange={(e) => actualizarPaso(i, 'tiempo', e.target.value)} placeholder="Tiempo (ej: 5 min, 2 h)" className="w-full p-2 bg-[#252322] border border-[#3A3633] rounded-lg text-[#E8E0D5] text-sm focus:border-[#C8965A] outline-none" />
+            <input type="text" value={paso.tiempo} onChange={(e) => actualizarPaso(i, 'tiempo', e.target.value)} placeholder="Tiempo (ej: 5 min, 2 h)" className="w-full p-3 bg-[#252322] border border-[#3A3633] rounded-lg text-[#E8E0D5] text-sm bg-[#252322] border border-[#3A3633] rounded-lg text-[#E8E0D5] text-sm focus:border-[#C8965A] outline-none" />
           </div>
         ))}
         <div ref={pasosEndRef} />

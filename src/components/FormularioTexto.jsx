@@ -24,8 +24,8 @@ export default function FormularioTexto({ onSubmit, onLimpiar }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="bg-[#1F1D1C] rounded-xl p-3 text-xs text-[#8B7D6B] space-y-1">
-        <p className="font-medium text-[#C8965A]">📋 Cómo escribir tu receta:</p>
+      <div className="bg-[#1F1D1C] rounded-xl p-3 text-sm text-[#B4A99A] space-y-2 p-4">
+        <p className="font-semibold text-[#C8965A] text-base mb-1">📋 Cómo escribir tu receta:</p>
         <p>1. Escribe primero los <strong>ingredientes</strong> con sus cantidades</p>
         <p>2. Luego explica la <strong>preparación</strong> paso a paso</p>
         <p>3. Si olvidaste algo, añádelo al final sin problema</p>

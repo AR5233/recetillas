@@ -55,7 +55,7 @@ export default function NuevaReceta({ onProcesar, onGuardar, onLimpiar }) {
 
       <main className="max-w-2xl mx-auto p-4 space-y-6 overflow-x-hidden">
         {paso === 1 && (
-          <div className="bg-[#252322] rounded-xl p-6 border border-[#3A3633] space-y-4">
+          <div className="bg-[#252322] rounded-xl p-6 border border-[#3A3633] space-y-4" onKeyDown={(e) => { if (e.key === "Enter" && titulo.trim()) setPaso(2); }}>
             <h2 className="text-lg font-semibold text-[#E8E0D5]">¿Para cuántas personas?</h2>
             <div className="grid grid-cols-4 gap-3">
               {[1,2,3,4,5,6,8,10,12,15,20].map(n => (
@@ -73,7 +73,7 @@ export default function NuevaReceta({ onProcesar, onGuardar, onLimpiar }) {
         )}
 
         {paso === 2 && !metodo && (
-          <div className="bg-[#252322] rounded-xl p-6 border border-[#3A3633] space-y-4">
+          <div className="bg-[#252322] rounded-xl p-6 border border-[#3A3633] space-y-4" onKeyDown={(e) => { if (e.key === "Enter" && titulo.trim()) setPaso(2); }}>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-[#C8965A] font-medium">{titulo}</p>
@@ -118,7 +118,7 @@ export default function NuevaReceta({ onProcesar, onGuardar, onLimpiar }) {
               </div>
               <button onClick={() => { setMetodo(null); setPaso(1); }} className="text-xs text-[#8B7D6B] hover:text-[#C8965A]">Editar</button>
             </div>
-            <FormularioAudio onSubmit={handleAudio} />
+            <FormularioAudio onSubmit={handleAudio} onLimpiar={onLimpiar} />
           </div>
         )}
 
